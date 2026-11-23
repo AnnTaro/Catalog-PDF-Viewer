@@ -254,9 +254,11 @@ $('sync').onclick=async()=>{
     toast('Googleにログイン中…');
     const H={headers:{Authorization:'Bearer '+await driveToken()}};
     const q=encodeURIComponent("'"+DRIVE.folderId+"' in parents and mimeType='application/pdf' and trashed=false");
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?pageSize=100&fields=files(id,name,modifiedTime)&q='+q,H);
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?pageSize=100&supportsAllDrives=true&includeItemsFromAllDrives=true&fields=files(id,name,modifiedTime)&q='+q,H);
     if(!r.ok)throw new Error('一覧取得 '+r.status);
     const list=(await r.json()).files||[],names=list.map(x=>x.name.replace(/\.pdf$/i,''));
+    let who='';try{const a=await fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)',H);who=(await a.json()).user.emailAddress}catch(e){}
+    if(!list.length){toast('ログイン中のアカウント'+(who?'（'+who+'）':'')+'から見えるPDFが0件でした。フォルダの共有先・フォルダID・アカウントを確認してください。端末のPDFは消していません',10000);return}
     for(const f of list){
       const nm=f.name.replace(/\.pdf$/i,''),old=files.find(x=>x.name===nm);
       if(old&&old.mt===f.modifiedTime)continue;
@@ -271,7 +273,7 @@ $('sync').onclick=async()=>{
         if(cur===f){cur=null;doc=null;$('pages').innerHTML='';$('ttl').textContent='PDF未選択'}
       }
     }
-    prep();renderList();search();toast('最新になりました',2500);
+    prep();renderList();search();toast('最新になりました（PDF '+list.length+'件'+(who?'・'+who:'')+'）',5000);
   }catch(e){toast('更新できませんでした（'+(e.message||e)+'）',5000)}
 };
 load();
