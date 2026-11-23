@@ -41,6 +41,9 @@ aside.hide{display:none}
 #bar button{min-height:32px;padding:2px 10px}
 #hnav{display:flex;gap:6px;align-items:center;white-space:nowrap;color:var(--ink)}
 #hnav[hidden]{display:none}
+[hidden]{display:none!important}
+.ab{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.ab button{flex:1;min-width:0}
 #pages{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}
 .pg{position:relative;margin:0 auto 8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .pg canvas{display:block;width:100%;height:100%}
@@ -55,12 +58,10 @@ aside.hide{display:none}
   <button id="tg" aria-label="一覧の表示切り替え">☰</button>
   <input id="q" type="search" placeholder="部分一致で検索" enterkeyhint="search" autocomplete="off">
   <select id="sc" aria-label="検索範囲"><option value="all">全ファイル</option><option value="cur">表示中</option></select>
-  <button id="sync" hidden>更新</button>
-  <button id="add">PDF追加</button>
   <input id="fi" type="file" accept="application/pdf" multiple hidden>
 </header>
 <main>
-  <aside id="side"><div id="list"></div><div id="res" hidden></div></aside>
+  <aside id="side"><div class="ab"><button id="sync" hidden>最新カタログに更新</button><button id="add">PDF追加</button></div><div id="list"></div><div id="res" hidden></div></aside>
   <section id="view">
     <div id="bar"><span class="t" id="ttl">PDF未選択</span><span id="hnav" hidden><span id="hn"></span><button id="hp" aria-label="前の該当箇所">▲</button><button id="hx" aria-label="次の該当箇所">▼</button></span><button id="zo" aria-label="縮小">－</button><button id="zi" aria-label="拡大">＋</button></div>
     <div id="pages"><div class="empty">「PDF追加」からカタログのPDFを選ぶと、ここに一覧が並びます。</div></div>
@@ -179,13 +180,13 @@ function setHL(){[...$('pages').children].forEach(d=>mark(d))}
 function search(){
   const raw=$('q').value.trim(),q=norm(raw),res=$('res'),list=$('list');
   sq=raw;
-  if(!q){res.hidden=true;list.hidden=false;hlq='';if(doc)setHL();ch=[];ci=-1;updNav();return}
+  if(!q){res.hidden=true;list.hidden=false;document.querySelector('.ab').hidden=false;hlq='';if(doc)setHL();ch=[];ci=-1;updNav();return}
   const targets=$('sc').value==='cur'&&cur?[cur]:files,hits=[];let total=0;
   targets.forEach(f=>f.txt.forEach((t,i)=>{
     const k=t.indexOf(q);if(k<0)return;total++;
     if(hits.length<300)hits.push({f,p:i+1,k,t});
   }));
-  list.hidden=true;res.hidden=false;res.innerHTML='';
+  list.hidden=true;res.hidden=false;res.innerHTML='';document.querySelector('.ab').hidden=true;
   syncHits(0);
   if(!cur)$('side').classList.remove('hide');
   else if($('side').classList.contains('hide')){
