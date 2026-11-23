@@ -222,7 +222,10 @@ $('zi').onclick=()=>setZoom(zoom+.25);$('zo').onclick=()=>setZoom(zoom-.25);
 $('pages').addEventListener('scroll',()=>{if(doc&&H)$('ttl').textContent=cur.name+'  '+Math.min(doc.numPages,Math.round($('pages').scrollTop/(H+8))+1)+'/'+doc.numPages},{passive:true});
 
 /* ===== Googleドライブ連携（ここに2つ入力すると「更新」ボタンが出ます） ===== */
-const DRIVE={clientId:'',folderId:''};
+const DRIVE={
+  clientId:'471284995724-tc7js5jsj4qkgmhi2gbsmfrk551r5jtl.apps.googleusercontent.com',
+  folderId:'1g1UKUuG6HK2L6JfumGHuh1sjTWxXemcC'
+};
 if(DRIVE.clientId&&DRIVE.folderId)$('sync').hidden=false;
 async function ingest(name,buf,mt){
   await ready;
