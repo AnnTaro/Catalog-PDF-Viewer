@@ -258,7 +258,23 @@ $('sync').onclick=async()=>{
     if(!r.ok)throw new Error('一覧取得 '+r.status);
     const list=(await r.json()).files||[],names=list.map(x=>x.name.replace(/\.pdf$/i,''));
     let who='';try{const a=await fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)',H);who=(await a.json()).user.emailAddress}catch(e){}
-    if(!list.length){toast('ログイン中のアカウント'+(who?'（'+who+'）':'')+'から見えるPDFが0件でした。フォルダの共有先・フォルダID・アカウントを確認してください。端末のPDFは消していません',10000);return}
+    if(!list.length){
+      let d='';
+      try{
+        const g=await fetch('https://www.googleapis.com/drive/v3/files/'+DRIVE.folderId+'?supportsAllDrives=true&fields=name,mimeType',H);
+        if(!g.ok)d='フォルダが見えません（共有先アカウントかフォルダIDが違います）';
+        else{
+          const j=await g.json();
+          if(j.mimeType!=='application/vnd.google-apps.folder')d='このIDはフォルダではありません（'+j.name+'）';
+          else{
+            const a2=await fetch('https://www.googleapis.com/drive/v3/files?pageSize=20&supportsAllDrives=true&includeItemsFromAllDrives=true&fields=files(mimeType)&q='+encodeURIComponent("'"+DRIVE.folderId+"' in parents and trashed=false"),H);
+            const k=(await a2.json()).files||[];
+            d='フォルダ「'+j.name+'」は見えます。中身は'+k.length+'件'+(k.length?'（'+[...new Set(k.map(x=>x.mimeType.split('/').pop()))].join(',')+'）':'');
+          }
+        }
+      }catch(e){}
+      toast('PDFが0件でした。アカウント: '+(who||'不明')+' / '+(d||'原因を調べられませんでした')+'。端末のPDFは消していません',15000);return
+    }
     for(const f of list){
       const nm=f.name.replace(/\.pdf$/i,''),old=files.find(x=>x.name===nm);
       if(old&&old.mt===f.modifiedTime)continue;
